@@ -1,10 +1,15 @@
+require "simplecov"
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
 require "bundler/setup"
 require "tiny_auth"
 require "bcrypt"
 
 # Configure GlobalID
-GlobalID.app = 'auth'
-SignedGlobalID.verifier = ActiveSupport::MessageVerifier.new('sekret')
+GlobalID.app = "auth"
+SignedGlobalID.verifier = ActiveSupport::MessageVerifier.new("sekret")
 ActiveRecord::Base.send :include, GlobalID::Identification
 
 # Make Bcrypt faster for tests
@@ -12,7 +17,7 @@ BCrypt::Engine.cost = BCrypt::Engine::MIN_COST
 
 # Setup the database
 ActiveRecord::Migration.verbose = false
-ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
+ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :email, null: false

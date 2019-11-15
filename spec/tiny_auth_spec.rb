@@ -21,13 +21,22 @@ RSpec.describe TinyAuth do
     specify { expect(auth.find_by_credentials("", password)).to be_nil }
   end
 
-  describe "#generate_token and #find_by_token" do
+  describe "#generate_token" do
+    specify { expect(auth.generate_token(user)).to be_a(String) }
+  end
+
+  describe "#find_by_token" do
     let(:token) { auth.generate_token(user) }
 
     specify { expect(auth.find_by_token(token)).to eq(user) }
     specify { expect(auth.find_by_token('')).to be_nil }
     specify { expect(auth.find_by_token(nil)).to be_nil }
     specify { expect(auth.find_by_token(token, purpose: :invalid)).to be_nil }
+
+    it "ignores non-existent records" do
+      user.destroy
+      expect(auth.find_by_token(token)).to be_nil
+    end
 
     context "using an expired token" do
       let(:token) { auth.generate_token(user, expires_in: -1.hour) }
@@ -56,6 +65,11 @@ RSpec.describe TinyAuth do
 
     it "assigns an expiration" do
       expect { reset_token }.to change { user.reload.reset_token_expires_at }
+    end
+
+    it "raises a custom exception when the record fails to save" do
+      allow_any_instance_of(User).to receive(:update).and_return(false)
+      expect { reset_token }.to raise_error(TinyAuth::PersistError)
     end
   end
 
@@ -94,6 +108,11 @@ RSpec.describe TinyAuth do
 
     it "clears the expiration" do
       expect { exchange }.to change { user.reload.reset_token_expires_at }.to(nil)
+    end
+
+    it "raises a custom exception when the record fails to save" do
+      allow_any_instance_of(User).to receive(:update).and_return(false)
+      expect { exchange }.to raise_error(TinyAuth::PersistError)
     end
 
     context "when the token is expired" do
