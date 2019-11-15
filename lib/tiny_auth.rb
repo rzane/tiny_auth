@@ -27,6 +27,7 @@ class TinyAuth
 
   def find_by_token(token, purpose: :access)
     GlobalID::Locator.locate_signed(token, for: purpose)
+  rescue ActiveRecord::RecordNotFound
   end
 
   def generate_reset_token(resource, expires_in: 2.hours)
