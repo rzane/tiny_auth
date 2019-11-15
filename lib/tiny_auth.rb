@@ -22,7 +22,7 @@ class TinyAuth
   end
 
   def generate_token(resource, purpose: :access, expires_in: 24.hours)
-    resource.to_sgid(expires_in: expires_in, for: purpose)
+    resource.to_sgid(expires_in: expires_in, for: purpose).to_s
   end
 
   def find_by_token(token, purpose: :access)
