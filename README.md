@@ -1,4 +1,4 @@
-# TinyAuth
+# TinyAuth [![Build Status](https://travis-ci.org/rzane/tiny_auth.svg?branch=master)](https://travis-ci.org/rzane/tiny_auth)
 
 A utility for minimal user authentication.
 
