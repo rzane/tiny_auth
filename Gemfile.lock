@@ -3,7 +3,7 @@ PATH
   specs:
     tiny_auth (0.1.0)
       activerecord (~> 6.0)
-      bcrypt (~> 3.1)
+      activesupport (~> 6.0)
       globalid (~> 0.4)
 
 GEM
@@ -52,6 +52,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bcrypt (~> 3.1)
   bundler (~> 2.0)
   rake (~> 10.0)
   rspec (~> 3.0)

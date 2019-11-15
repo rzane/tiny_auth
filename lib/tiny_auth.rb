@@ -1,6 +1,7 @@
 require "tiny_auth/version"
-require "active_record"
 require "globalid"
+require "active_record"
+require "active_support/core_ext/securerandom"
 
 class TinyAuth
   class Error < StandardError; end

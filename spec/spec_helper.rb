@@ -3,6 +3,7 @@ require "tiny_auth"
 
 GlobalID.app = 'auth'
 SignedGlobalID.verifier = ActiveSupport::MessageVerifier.new('sekret')
+ActiveRecord::Base.send :include, GlobalID::Identification
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 ActiveRecord::Migration.verbose = false
@@ -18,9 +19,7 @@ ActiveRecord::Schema.define do
 end
 
 class User < ActiveRecord::Base
-  include GlobalID::Identification
   has_secure_password
-  has_secure_token :reset_token
 end
 
 RSpec.configure do |config|

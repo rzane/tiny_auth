@@ -1,8 +1,6 @@
 # TinyAuth
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/tiny_auth`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+A utility for minimal user authentication.
 
 ## Installation
 
@@ -16,13 +14,43 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install tiny_auth
-
 ## Usage
 
-TODO: Write usage instructions here
+First, create a table to store your users:
+
+```ruby
+create_table :users do |t|
+  t.string :email, null: false
+  t.string :password_digest, null: false
+  t.string :reset_token
+  t.datetime :reset_token_expires_at
+  t.index :email, unique: true
+  t.index :reset_token, unique: true
+end
+```
+
+Your model should look like this:
+
+```ruby
+class User < ApplicationRecord
+  has_secure_password
+end
+```
+
+Now, you're ready to use `TinyAuth`:
+
+```ruby
+auth = TinyAuth.new(User)
+
+user = auth.find_by_email('user@example.com')
+user = auth.find_by_credentials('user@example.com', 'password')
+
+token = auth.generate_token(user)
+user = auth.find_by_token(token)
+
+reset_token = auth.generate_reset_token(user)
+user = auth.exchange_reset_token(user, password: "changed")
+```
 
 ## Development
 
