@@ -4,16 +4,13 @@ require "active_record"
 require "active_support/core_ext/securerandom"
 
 class TinyAuth
-  class Error < StandardError; end
-  class PersistError < StandardError; end
-
   def initialize(model, scope: model)
     @model = model
     @scope = scope
   end
 
   def find_by_email(email)
-    @scope.find_by(@model.arel_table[:email].lower.eq(email.downcase))
+    scope.find_by(model.arel_table[:email].lower.eq(email.downcase))
   end
 
   def find_by_credentials(email, password)
@@ -30,32 +27,38 @@ class TinyAuth
   rescue ActiveRecord::RecordNotFound
   end
 
-  def generate_reset_token(resource, expires_in: 2.hours)
-    update_reset(
-      resource,
-      reset_token: SecureRandom.base58(24),
-      reset_token_expires_at: expires_in.from_now
-    )
-
-    resource.reset_token
+  def generate_reset_token(resource, **opts)
+    generate_single_use_token(resource, purpose: :reset, **opts)
   end
 
-  def exchange_reset_token(reset_token, changes = {})
-    changes = changes.merge(reset_token: nil, reset_token_expires_at: nil)
-    not_expired = @model.arel_table[:reset_token_expires_at].gt(Time.now)
-    resource = @scope.where(not_expired).find_by(reset_token: reset_token)
+  def generate_single_use_token(resource, purpose:, expires_in: 2.hours)
+    token = SecureRandom.base58(24)
 
-    yield resource if resource && block_given?
-    update_reset(resource, changes) if resource
+    resource.update!(
+      "#{purpose}_token" => token,
+      "#{purpose}_token_expires_at" => expires_in.from_now
+    )
+
+    token
+  end
+
+  def exchange_reset_token(token, **opts, &block)
+    exchange_single_use_token(token, purpose: :reset, **opts, &block)
+  end
+
+  def exchange_single_use_token(token, purpose:, update: {})
+    not_expired = model.arel_table[:"#{purpose}_token_expires_at"].gt(Time.now)
+    resource = scope.where(not_expired).find_by(:"#{purpose}_token" => token)
+
+    return if resource.nil?
+    yield resource if block_given?
+
+    resource.assign_attributes(update)
+    resource.update!("#{purpose}_token" => nil, "#{purpose}_token_expires_at" => nil)
+    resource
   end
 
   private
 
-  def update_reset(resource, changes)
-    if resource.update(changes)
-      resource
-    else
-      raise PersistError, "Failed to reset password."
-    end
-  end
+  attr_reader :model, :scope
 end

@@ -66,11 +66,6 @@ RSpec.describe TinyAuth do
     it "assigns an expiration" do
       expect { reset_token }.to change { user.reload.reset_token_expires_at }
     end
-
-    it "raises a custom exception when the record fails to save" do
-      allow_any_instance_of(User).to receive(:update).and_return(false)
-      expect { reset_token }.to raise_error(TinyAuth::PersistError)
-    end
   end
 
   describe "#exchange_reset_token" do
@@ -90,7 +85,7 @@ RSpec.describe TinyAuth do
 
     it "accepts attributes for update" do
       expect {
-        exchange(email: 'changed@example.com')
+        exchange(update: {email: 'changed@example.com'})
       }.to change { user.reload.email }
     end
 
@@ -110,13 +105,8 @@ RSpec.describe TinyAuth do
       expect { exchange }.to change { user.reload.reset_token_expires_at }.to(nil)
     end
 
-    it "raises a custom exception when the record fails to save" do
-      allow_any_instance_of(User).to receive(:update).and_return(false)
-      expect { exchange }.to raise_error(TinyAuth::PersistError)
-    end
-
     context "when the token is expired" do
-      let(:reset_token) { auth.generate_reset_token(user, expires_in: -1) }
+      let(:reset_token) { auth.generate_reset_token(user, expires_in: -1.hour) }
 
       it "returns nil" do
         expect(exchange).to be_nil
