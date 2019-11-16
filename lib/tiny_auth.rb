@@ -4,9 +4,13 @@ require "active_record"
 require "active_support/core_ext/securerandom"
 
 class TinyAuth
-  def initialize(model, scope: model)
+  def initialize(model, scope: model, secret: secret_key_base)
     @model = model
     @scope = scope
+    @secret = secret
+
+    raise ArgumentError, "missing argument: model" if model.nil?
+    raise ArgumentError, "missing keyword: secret" if secret.nil?
   end
 
   def find_by_email(email)
@@ -35,7 +39,7 @@ class TinyAuth
     token = SecureRandom.base58(24)
 
     resource.update!(
-      "#{purpose}_token" => token,
+      "#{purpose}_token" => hmac(token),
       "#{purpose}_token_expires_at" => expires_in.from_now
     )
 
@@ -48,7 +52,7 @@ class TinyAuth
 
   def exchange_single_use_token(token, purpose:, update: {})
     not_expired = model.arel_table[:"#{purpose}_token_expires_at"].gt(Time.now)
-    resource = scope.where(not_expired).find_by(:"#{purpose}_token" => token)
+    resource = scope.where(not_expired).find_by(:"#{purpose}_token" => hmac(token))
 
     return if resource.nil?
     yield resource if block_given?
@@ -60,5 +64,13 @@ class TinyAuth
 
   private
 
-  attr_reader :model, :scope
+  attr_reader :model, :scope, :secret
+
+  def hmac(value)
+    OpenSSL::HMAC.hexdigest("SHA256", secret, value)
+  end
+
+  def secret_key_base
+    Rails.application.secret_key_base if defined?(Rails)
+  end
 end

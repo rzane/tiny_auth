@@ -1,5 +1,5 @@
 RSpec.describe TinyAuth do
-  subject(:auth) { TinyAuth.new(User) }
+  subject(:auth) { TinyAuth.new(User, secret: "abcdefg") }
   let(:email)    { 'user@example.com' }
   let(:password) { 'password' }
   let!(:user)    { User.create(email: email, password: password) }
