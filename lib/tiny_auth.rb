@@ -34,7 +34,7 @@ class TinyAuth
     update_reset(
       resource,
       reset_token: SecureRandom.base58(24),
-      reset_token_expires_at: Time.now + expires_in
+      reset_token_expires_at: expires_in.from_now
     )
 
     resource.reset_token
