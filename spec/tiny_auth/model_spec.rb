@@ -1,6 +1,6 @@
 RSpec.describe TinyAuth::Model do
-  let(:email)    { 'user@example.com' }
-  let(:password) { 'password' }
+  let(:email)    { "user@example.com" }
+  let(:password) { "password" }
   let!(:user)    { User.create(email: email, password: password) }
 
   before do
@@ -62,27 +62,33 @@ RSpec.describe TinyAuth::Model do
   describe "#exchange_reset_token" do
     let!(:reset_token) { user.generate_reset_token }
 
-    def exchange(*args, &block)
-      User.exchange_reset_token(reset_token, *args, &block)
-    end
-
     it "returns the user" do
-      expect(exchange).to eq(user)
+      expect(User.exchange_reset_token(reset_token)).to eq(user)
     end
 
     it "nullifies reset_token_digest" do
-      expect { exchange }.to change { user.reload.reset_token_digest }.to(nil)
+      user = User.exchange_reset_token(reset_token)
+      expect(user.reset_token_digest).to be_nil
     end
 
     it "nullifies reset_token_expires_at" do
-      expect { exchange }.to change { user.reload.reset_token_expires_at }.to(nil)
+      user = User.exchange_reset_token(reset_token)
+      expect(user.reset_token_expires_at).to be_nil
     end
 
     context "when the token is expired" do
       let(:reset_token) { user.generate_reset_token(expires_in: -1.hour) }
 
       it "returns nil" do
-        expect(exchange).to be_nil
+        expect(User.exchange_reset_token(reset_token)).to be_nil
+      end
+    end
+
+    context "when the token is pure baloney" do
+      let(:reset_token) { "baloney" }
+
+      it "returns nil" do
+        expect(User.exchange_reset_token(reset_token)).to be_nil
       end
     end
   end

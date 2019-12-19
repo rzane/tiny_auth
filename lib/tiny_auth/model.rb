@@ -1,5 +1,6 @@
 require "active_record"
 require "globalid"
+require "active_support/core_ext/numeric/time"
 require "active_support/core_ext/securerandom"
 
 module TinyAuth
@@ -50,18 +51,18 @@ module TinyAuth
     end
 
     # Generates a stateless token for a resource
-    # @param expires_in [ActiveSupport::Duration,Integer] defaults to 24 hours
-    def generate_token(expires_in: 86400)
+    # @param expires_in [ActiveSupport::Duration] defaults to 24 hours
+    def generate_token(expires_in: 24.hours)
       to_signed_global_id(expires_in: expires_in, for: :access).to_s
     end
 
     # Generates a reset token for a resource. A hashed version of the token
     # is stored in the database
-    # @param expires_in [ActiveSupport::Duration,Integer] defaults to 2 hours
-    def generate_reset_token(expires_in: 7200)
+    # @param expires_in [ActiveSupport::Duration] defaults to 2 hours
+    def generate_reset_token(expires_in: 2.hours)
       token = SecureRandom.base58(24)
       digest = TinyAuth.hexdigest(token)
-      expiry = Time.now + expires_in
+      expiry = expires_in.from_now
 
       update_columns(
         reset_token_digest: digest,
