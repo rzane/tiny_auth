@@ -24,8 +24,9 @@ create_table :users do |t|
   t.string :password_digest, null: false
   t.string :reset_token_digest
   t.datetime :reset_token_expires_at
+
   t.index :email, unique: true
-  t.index :reset_token, unique: true
+  t.index :reset_token_digest, unique: true
 end
 ```
 
