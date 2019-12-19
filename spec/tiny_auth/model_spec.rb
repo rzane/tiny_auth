@@ -30,7 +30,6 @@ RSpec.describe TinyAuth::Model do
     specify { expect(User.find_by_token(token)).to eq(user) }
     specify { expect(User.find_by_token('')).to be_nil }
     specify { expect(User.find_by_token(nil)).to be_nil }
-    specify { expect(User.find_by_token(token, purpose: :invalid)).to be_nil }
 
     it "ignores non-existent records" do
       user.destroy
@@ -41,13 +40,6 @@ RSpec.describe TinyAuth::Model do
       let(:token) { user.generate_token(expires_in: -1.hour) }
 
       specify { expect(User.find_by_token(token)).to be_nil }
-    end
-
-    context "using a token with a custom purpose" do
-      let(:token) { user.generate_token(purpose: :custom) }
-
-      specify { expect(User.find_by_token(token)).to be_nil }
-      specify { expect(User.find_by_token(token, purpose: :custom)).to eq(user) }
     end
   end
 
