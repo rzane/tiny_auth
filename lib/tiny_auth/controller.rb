@@ -20,6 +20,7 @@ module TinyAuth
     # @example
     #   class ApplicationController < ActionController::Base
     #     extend TinyAuth::Controller
+    #
     #     authenticates model: User, only: :index
     #
     #     def index

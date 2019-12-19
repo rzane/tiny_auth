@@ -22,7 +22,7 @@ First, create a table to store your users:
 create_table :users do |t|
   t.string :email, null: false
   t.string :password_digest, null: false
-  t.string :reset_token
+  t.string :reset_token_digest
   t.datetime :reset_token_expires_at
   t.index :email, unique: true
   t.index :reset_token, unique: true
@@ -33,23 +33,40 @@ Your model should look like this:
 
 ```ruby
 class User < ApplicationRecord
+  include TinyAuth::Model
   has_secure_password
 end
 ```
 
-Now, you're ready to use `TinyAuth`:
+Now, you're ready to authenticate!
 
 ```ruby
-auth = TinyAuth.new(User)
+user = User.find_by_email("user@example.com")
+user = User.find_by_credentials("user@example.com", "password")
 
-user = auth.find_by_email('user@example.com')
-user = auth.find_by_credentials('user@example.com', 'password')
+token = user.generate_token
+user = User.find_by_token(token)
 
-token = auth.generate_token(user)
-user = auth.find_by_token(token)
+reset_token = user.generate_reset_token
+user = User.exchange_reset_token(reset_token)
+```
 
-reset_token = auth.generate_reset_token(user)
-user = auth.exchange_reset_token(user, password: "changed")
+Oh, and you can add authentication to your controllers:
+
+```ruby
+class ApplicationController < ActionController::Base
+  extend TinyAuth::Controller
+
+  authenticates model: User
+
+  def index
+    if user_signed_in?
+      render json: {id: current_user.id}
+    else
+      head :unauthorized
+    end
+  end
+end
 ```
 
 ## Development
