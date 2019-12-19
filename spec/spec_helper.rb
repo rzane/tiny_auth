@@ -30,6 +30,10 @@ RSpec.configure do |config|
   end
 
   config.before :each do
+    TinyAuth.secret = "abcdefg"
+  end
+
+  config.before :each do
     User.delete_all
   end
 end

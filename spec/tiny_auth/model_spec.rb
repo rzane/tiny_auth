@@ -3,10 +3,6 @@ RSpec.describe TinyAuth::Model do
   let(:password) { "password" }
   let!(:user)    { User.create(email: email, password: password) }
 
-  before do
-    TinyAuth.secret = "abcdefg"
-  end
-
   describe "#find_by_email" do
     specify { expect(User.find_by_email(email)).to eq(user) }
     specify { expect(User.find_by_email(email.upcase)).to eq(user) }
