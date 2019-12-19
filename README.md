@@ -1,4 +1,4 @@
-# TinyAuth [![Build Status](https://travis-ci.org/rzane/tiny_auth.svg?branch=master)](https://travis-ci.org/rzane/tiny_auth)
+# TinyAuth [![Build Status](https://travis-ci.org/rzane/tiny_auth.svg?branch=master)](https://travis-ci.org/rzane/tiny_auth) [![Coverage Status](https://coveralls.io/repos/github/rzane/tiny_auth/badge.svg?branch=master)](https://coveralls.io/github/rzane/tiny_auth?branch=master)
 
 A utility for minimal user authentication.
 

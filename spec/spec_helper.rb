@@ -1,11 +1,7 @@
-require "simplecov"
-SimpleCov.start do
-  add_filter "/spec/"
-end
-
 require "bundler/setup"
-require "tiny_auth"
+require_relative "support/coverage"
 require "bcrypt"
+require "tiny_auth"
 require_relative "support/schema"
 require_relative "support/models"
 require_relative "support/controller"
