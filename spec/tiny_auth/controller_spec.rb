@@ -1,9 +1,16 @@
-class TestController < Controller
+class TestController
   extend TinyAuth::Controller
 
+  attr_accessor :request
+
   authenticates model: User
-  authenticates model: User, name: :person, only: :show
+  authenticates model: User, name: :person
+
+  def initialize(request)
+    self.request = request
+  end
 end
+
 
 RSpec.describe TinyAuth::Controller do
   describe ".token" do
@@ -44,16 +51,14 @@ RSpec.describe TinyAuth::Controller do
     let(:request) { double(authorization: authorization) }
     let(:controller) { TestController.new(request) }
 
-    it "defines a before_action" do
-      expect(TestController.before_actions.length).to eq(2)
-    end
-
     it "finds the current_user" do
+      expect(controller.authenticate_user).to eq(user)
       expect(controller.current_user).to eq(user)
       expect(controller.user_signed_in?).to be(true)
     end
 
     it "finds the current person" do
+      expect(controller.authenticate_person).to eq(user)
       expect(controller.current_person).to eq(user)
       expect(controller.person_signed_in?).to be(true)
     end

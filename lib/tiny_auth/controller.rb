@@ -15,13 +15,13 @@ module TinyAuth
     # resource.
     # @param model [ActiveRecord::Base]
     # @param name [Symbol] Used to define methods like `current_user`
-    # @param options [Hash] Additional arguments for `before_action`
     #
     # @example
     #   class ApplicationController < ActionController::Base
     #     extend TinyAuth::Controller
     #
-    #     authenticates model: User, only: :index
+    #     authenticates model: User
+    #     before_action :authenticate_user
     #
     #     def index
     #       if user_signed_in?
@@ -31,7 +31,7 @@ module TinyAuth
     #       end
     #     end
     #   end
-    def authenticates(model:, name: model.model_name.singular, **options)
+    def authenticates(model:, name: model.model_name.singular)
       authenticate = :"authenticate_#{name}"
       current = :"current_#{name}"
       current_ivar = :"@current_#{name}"
@@ -51,8 +51,6 @@ module TinyAuth
           instance_variable_set(current_ivar, resource)
         end
       end
-
-      before_action(authenticate, **options)
     end
   end
 end

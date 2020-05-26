@@ -4,7 +4,6 @@ require "bcrypt"
 require "tiny_auth"
 require_relative "support/schema"
 require_relative "support/models"
-require_relative "support/controller"
 
 # Configure GlobalID
 GlobalID.app = "auth"
