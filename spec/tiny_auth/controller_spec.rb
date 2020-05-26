@@ -1,10 +1,8 @@
 class TestController
-  extend TinyAuth::Controller
+  include TinyAuth::Controller.new(model: User)
+  include TinyAuth::Controller.new(model: User, name: :person)
 
   attr_accessor :request
-
-  authenticates model: User
-  authenticates model: User, name: :person
 
   def initialize(request)
     self.request = request

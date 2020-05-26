@@ -56,9 +56,9 @@ Oh, and you can add authentication to your controllers:
 
 ```ruby
 class ApplicationController < ActionController::Base
-  extend TinyAuth::Controller
+  include TinyAuth::Controller.new(model: User)
 
-  authenticates model: User
+  before_action :authenticate_user
 
   def index
     if user_signed_in?

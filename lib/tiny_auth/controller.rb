@@ -1,7 +1,7 @@
 require "active_support/core_ext/object/blank"
 
 module TinyAuth
-  module Controller
+  class Controller < Module
     # Extract a token from a request
     # @param request [ActionDispatch::HTTP::Request]
     # @return [String,nil]
@@ -18,9 +18,8 @@ module TinyAuth
     #
     # @example
     #   class ApplicationController < ActionController::Base
-    #     extend TinyAuth::Controller
+    #     include TinyAuth::Controller.new(model: User)
     #
-    #     authenticates model: User
     #     before_action :authenticate_user
     #
     #     def index
@@ -31,7 +30,7 @@ module TinyAuth
     #       end
     #     end
     #   end
-    def authenticates(model:, name: model.model_name.singular)
+    def initialize(model:, name: model.model_name.singular)
       authenticate = :"authenticate_#{name}"
       current = :"current_#{name}"
       current_ivar = :"@current_#{name}"
