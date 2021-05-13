@@ -26,7 +26,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "activerecord", "~> 6.0"
   spec.add_dependency "activesupport", "~> 6.0"
-  spec.add_dependency "globalid", "~> 0.4"
 
   spec.add_development_dependency "bundler", "~> 2.0"
   spec.add_development_dependency "rake", "~> 10.0"

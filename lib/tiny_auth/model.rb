@@ -1,5 +1,4 @@
 require "active_record"
-require "globalid"
 require "active_support/core_ext/numeric/time"
 require "active_support/core_ext/securerandom"
 
@@ -31,9 +30,7 @@ module TinyAuth
       # @param token [String]
       # @return [ActiveRecord::Base,nil]
       def find_by_token(token)
-        resource = GlobalID::Locator.locate_signed(token, for: :access)
-        resource if resource.kind_of?(self)
-      rescue ActiveRecord::RecordNotFound
+        find_by id: TinyAuth.verifier.verify(token, for: :access)
       end
 
       # Finds a resource by their reset token and nillifies `reset_password_digest`
@@ -53,7 +50,7 @@ module TinyAuth
     # Generates a stateless token for a resource
     # @param expires_in [ActiveSupport::Duration] defaults to 24 hours
     def generate_token(expires_in: 24.hours)
-      to_signed_global_id(expires_in: expires_in, for: :access).to_s
+      TinyAuth.verifier.generate(id, expires_in: expires_in)
     end
 
     # Generates a reset token for a resource. A hashed version of the token
