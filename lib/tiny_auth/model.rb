@@ -30,7 +30,7 @@ module TinyAuth
       # @param token [String]
       # @return [ActiveRecord::Base,nil]
       def find_by_token(token)
-        find_by id: TinyAuth.verifier.verify(token, for: :access)
+        find_by token_identifier: TinyAuth.verifier.verify(token, for: :access)
       end
 
       # Finds a resource by their reset token and nillifies `reset_password_digest`
@@ -41,16 +41,26 @@ module TinyAuth
         digest = TinyAuth.hexdigest(token)
         not_expired = arel_table[:reset_token_expires_at].gt(Time.now)
         resource = where(not_expired).find_by(reset_token_digest: digest)
-        resource&.reset_token_digest = nil
-        resource&.reset_token_expires_at = nil
+
+        if resource
+          resource.reset_token_digest = nil
+          resource.reset_token_expires_at = nil
+          resource.token_identifier = SecureRandom.uuid
+        end
+
         resource
       end
+    end
+
+    def invalidate_all_tokens
+      update_column :token_identifier, SecureRandom.uuid
     end
 
     # Generates a stateless token for a resource
     # @param expires_in [ActiveSupport::Duration] defaults to 24 hours
     def generate_token(expires_in: 24.hours)
-      TinyAuth.verifier.generate(id, expires_in: expires_in)
+      invalidate_all_tokens unless token_identifier?
+      TinyAuth.verifier.generate(token_identifier, expires_in: expires_in)
     end
 
     # Generates a reset token for a resource. A hashed version of the token
