@@ -17,4 +17,9 @@ module TinyAuth
   end
 end
 
-require "tiny_auth/railtie" if defined?(Rails::Railtie)
+begin
+  require "rails/railtie"
+rescue LoadError
+else
+  require "tiny_auth/railtie"
+end
