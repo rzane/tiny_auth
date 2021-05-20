@@ -16,17 +16,17 @@ And then execute:
 
 ## Usage
 
+### `TinyAuth::Model`
+
 First, create a table to store your users:
 
 ```ruby
 create_table :users do |t|
   t.string :email, null: false
   t.string :password_digest, null: false
-  t.string :reset_token_digest
-  t.datetime :reset_token_expires_at
-
+  t.integer :token_version, null: false, default: 0
   t.index :email, unique: true
-  t.index :reset_token_digest, unique: true
+  t.index [:id, :token_version], unique: true
 end
 ```
 
@@ -39,17 +39,37 @@ class User < ApplicationRecord
 end
 ```
 
-Now, you're ready to authenticate!
+#### `.find_by_email(email)`
+
+Find a user by their email address. The query will disregard casing.
 
 ```ruby
+irb> User.find_by_email("user@example.com")
+
+```
+
+#### `.find_by_credentials(email, password)`
+
+Find a user by their email, then check that the password matches.
+
+```ruby
+# Find a user by their email address
 user = User.find_by_email("user@example.com")
+
+# Find a user by their credentials
 user = User.find_by_credentials("user@example.com", "password")
 
+# Generate an access token that will expire
 token = user.generate_token
+
+# Find a user by their token
 user = User.find_by_token(token)
 
-reset_token = user.generate_reset_token
-user = User.exchange_reset_token(reset_token)
+# Generate a reset token
+reset_token = user.generate_token(purpose: :reset, expires_in: 1.hour)
+
+# Find a user by their reset token
+user = User.find_by_reset_token(reset_token, purpose: :reset)
 ```
 
 Oh, and you can add authentication to your controllers:

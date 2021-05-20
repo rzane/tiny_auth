@@ -13,7 +13,7 @@ module TinyAuth
       # @param email [String]
       # @return [ActiveRecord::Base,nil]
       def find_by_email(email)
-        find_by arel_table[:email].lower.eq(email.downcase)
+        find_by(arel_table[:email].lower.eq(email.downcase))
       end
 
       # Find a resource by their email address and password
@@ -28,55 +28,40 @@ module TinyAuth
 
       # Finds a resource by a token
       # @param token [String]
+      # @param purpose [Symbol] defaults to `:access`
       # @return [ActiveRecord::Base,nil]
-      def find_by_token(token)
-        find_by token_identifier: TinyAuth.verifier.verify(token, for: :access)
-      end
-
-      # Finds a resource by their reset token and nillifies `reset_password_digest`
-      # and `reset_token_expires_at` fields
-      # @param token [String]
-      # @return [ActiveRecord::Base,nil]
-      def exchange_reset_token(token)
-        digest = TinyAuth.hexdigest(token)
-        not_expired = arel_table[:reset_token_expires_at].gt(Time.now)
-        resource = where(not_expired).find_by(reset_token_digest: digest)
-
-        if resource
-          resource.reset_token_digest = nil
-          resource.reset_token_expires_at = nil
-          resource.token_identifier = SecureRandom.uuid
-        end
-
-        resource
+      def find_by_token(token, purpose: :access)
+        id, token_version = TinyAuth.verifier.verify(token, purpose: purpose)
+        find_by(id: id, token_version: token_version)
+      rescue ActiveSupport::MessageVerifier::InvalidSignature
       end
     end
 
-    def invalidate_all_tokens
-      update_column :token_identifier, SecureRandom.uuid
-    end
-
-    # Generates a stateless token for a resource
+    # Generates a token for this resource.
     # @param expires_in [ActiveSupport::Duration] defaults to 24 hours
-    def generate_token(expires_in: 24.hours)
-      invalidate_all_tokens unless token_identifier?
-      TinyAuth.verifier.generate(token_identifier, expires_in: expires_in)
+    # @param purpose [Symbol] defaults to `:access`
+    # @return [String]
+    def generate_token(purpose: :access, expires_in: 24.hours)
+      TinyAuth.verifier.generate(
+        [id, token_version],
+        purpose: purpose,
+        expires_in: expires_in
+      )
     end
 
-    # Generates a reset token for a resource. A hashed version of the token
-    # is stored in the database
-    # @param expires_in [ActiveSupport::Duration] defaults to 2 hours
-    def generate_reset_token(expires_in: 2.hours)
-      token = SecureRandom.base58(24)
-      digest = TinyAuth.hexdigest(token)
-      expiry = expires_in.from_now
+    # Invalidate all tokens for this resource.
+    # @return [self]
+    def invalidate_tokens!
+      increment!(:token_version)
+    end
 
-      update_columns(
-        reset_token_digest: digest,
-        reset_token_expires_at: expiry
-      )
-
-      token
+    # Whenever the password digest changes, all previously issued tokens
+    # will be invalidated.
+    # @param value [String] the new password digest
+    # @return [String]
+    def password_digest=(value)
+      increment(:token_version)
+      super
     end
   end
 end

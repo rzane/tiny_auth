@@ -6,10 +6,8 @@ ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :email, null: false
     t.string :password_digest, null: false
-    t.uuid :token_identifier
-    t.string :reset_token_digest
-    t.datetime :reset_token_expires_at
+    t.integer :token_version, null: false, default: 0
     t.index :email, unique: true
-    t.index :reset_token, unique: true
+    t.index [:id, :token_version], unique: true
   end
 end

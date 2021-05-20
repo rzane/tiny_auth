@@ -6,31 +6,18 @@ RSpec.describe TinyAuth do
   describe ".secret" do
     it "can be configured" do
       TinyAuth.secret = "foo"
-      expect(TinyAuth.secret).to eq("foo")
+      expect(TinyAuth.verifier).to be_an(ActiveSupport::MessageVerifier)
     end
 
-    it "raises an error if the secret is not set" do
-      TinyAuth.secret = nil
-      expect { TinyAuth.secret }.to raise_error(RuntimeError)
-    end
-
-    it "attempts to use Rails.application.secret_key_base" do
-      application = double(secret_key_base: "foo")
-      rails = double(application: application)
-      stub_const("Rails", rails)
-
-      TinyAuth.secret = nil
-      expect(TinyAuth.secret).to eq("foo")
+    it "raises an error if the secret is set to `nil`" do
+      expect { TinyAuth.secret = nil }.to raise_error(ArgumentError, "Secret should not be nil.")
     end
   end
 
-  describe ".hexdigest" do
-    it "hashes a value" do
-      expect(TinyAuth.hexdigest("foo")).to be_a(String)
-    end
-
-    it "is deterministic" do
-      expect(TinyAuth.hexdigest("foo")).to eq(TinyAuth.hexdigest("foo"))
+  describe ".verifier" do
+    it "raises an error if the secret is not set" do
+      TinyAuth.instance_variable_set(:@verifier, nil)
+      expect { TinyAuth.verifier }.to raise_error(RuntimeError, "Secret has not been configured")
     end
   end
 end

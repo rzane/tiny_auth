@@ -7,4 +7,6 @@ require "tiny_auth"
 require_relative "../spec/support/schema"
 require_relative "../spec/support/models"
 
+User.create!(email: "user@example.com", password: "testing123")
+
 binding.irb
