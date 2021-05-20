@@ -6,6 +6,7 @@ module TinyAuth
   module Model
     def self.included(base)
       base.extend ClassMethods
+      base.before_save :invalidate_tokens, if: :password_digest_changed?
     end
 
     module ClassMethods
@@ -49,19 +50,17 @@ module TinyAuth
       )
     end
 
-    # Invalidate all tokens for this resource.
+    # Invalidate all tokens for this resource. The token version will
+    # be incremented and written to the database.
     # @return [self]
     def invalidate_tokens!
       increment!(:token_version)
     end
 
-    # Whenever the password digest changes, all previously issued tokens
-    # will be invalidated.
-    # @param value [String] the new password digest
-    # @return [String]
-    def password_digest=(value)
+    # Invalidate all tokens for this resource. The token version will
+    # be incremented, but it will not be written to the database.
+    def invalidate_tokens
       increment(:token_version)
-      super
     end
   end
 end

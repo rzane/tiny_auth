@@ -9,4 +9,4 @@ require_relative "../spec/support/models"
 
 User.create!(email: "user@example.com", password: "testing123")
 
-binding.irb
+IRB.start(__FILE__)

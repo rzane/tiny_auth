@@ -5,8 +5,8 @@ require "tiny_auth"
 require_relative "support/schema"
 require_relative "support/models"
 
-# Make Bcrypt faster for tests
-BCrypt::Engine.cost = BCrypt::Engine::MIN_COST
+# Run fast in test mode
+ActiveModel::SecurePassword.min_cost = true
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

@@ -38,4 +38,34 @@ RSpec.describe TinyAuth::Model do
       specify { expect(User.find_by_token(token)).to be_nil }
     end
   end
+
+  describe "#invalidate_tokens!" do
+    it "invalidates tokens by changing the `token_version`" do
+      token = user.generate_token
+      expect(User.find_by_token(token)).to eq(user)
+
+      user.invalidate_tokens!
+      expect(User.find_by_token(token)).to be_nil
+    end
+  end
+
+  context "when the password changes" do
+    it "invalidates previously issued tokens" do
+      token = user.generate_token
+      expect(User.find_by_token(token)).to eq(user)
+
+      user.update!(password: "changed")
+      expect(User.find_by_token(token)).to be_nil
+    end
+  end
+
+  context "when the password_digest changes" do
+    it "invalidates previously issued tokens" do
+      token = user.generate_token
+      expect(User.find_by_token(token)).to eq(user)
+
+      user.update!(password_digest: "changed")
+      expect(User.find_by_token(token)).to be_nil
+    end
+  end
 end
