@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require "irb"
+require "active_record"
+require "tiny_auth"
+
+require_relative "../spec/support/schema"
+require_relative "../spec/support/models"
+
+binding.irb
