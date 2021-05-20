@@ -5,11 +5,6 @@ require "tiny_auth"
 require_relative "support/schema"
 require_relative "support/models"
 
-# Configure GlobalID
-GlobalID.app = "auth"
-SignedGlobalID.verifier = ActiveSupport::MessageVerifier.new("sekret")
-ActiveRecord::Base.send :include, GlobalID::Identification
-
 # Make Bcrypt faster for tests
 BCrypt::Engine.cost = BCrypt::Engine::MIN_COST
 
@@ -25,7 +20,7 @@ RSpec.configure do |config|
   end
 
   config.before :each do
-    TinyAuth.secret = "abcdefg"
+    TinyAuth.secret = "secret"
   end
 
   config.before :each do
