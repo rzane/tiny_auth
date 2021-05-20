@@ -35,7 +35,6 @@ Your model should look like this:
 ```ruby
 class User < ApplicationRecord
   include TinyAuth::Model
-  has_secure_password
 end
 ```
 

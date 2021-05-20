@@ -1,4 +1,3 @@
-require "openssl"
 require "tiny_auth/model"
 require "tiny_auth/controller"
 require "tiny_auth/version"

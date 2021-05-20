@@ -1,11 +1,11 @@
 require "active_record"
 require "active_support/core_ext/numeric/time"
-require "active_support/core_ext/securerandom"
 
 module TinyAuth
   module Model
     def self.included(base)
       base.extend ClassMethods
+      base.has_secure_password
       base.before_save :invalidate_tokens, if: :password_digest_changed?
     end
 

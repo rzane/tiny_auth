@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 
+require "bundler/setup"
 require "irb"
 require "active_record"
 require "tiny_auth"
 
 require_relative "../spec/support/schema"
 require_relative "../spec/support/models"
+
+ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
 
 User.create!(email: "user@example.com", password: "testing123")
 
