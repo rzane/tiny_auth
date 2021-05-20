@@ -8,6 +8,7 @@ require "tiny_auth"
 require_relative "../spec/support/schema"
 require_relative "../spec/support/models"
 
+TinyAuth.secret = "supersecret"
 ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
 
 User.create!(email: "user@example.com", password: "testing123")

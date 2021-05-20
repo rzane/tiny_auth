@@ -38,56 +38,91 @@ class User < ApplicationRecord
 end
 ```
 
+#### `#generate_token(purpose: :access, expires_in: 24.hours)`
+
+Generate a token. The token is generated from the user's `id` and their `token_version`.
+
+If the `token_version` changes, all previously issued tokens will be revoked. Anytime the
+user's password changes, this will happen automatically.
+
+```ruby
+irb> user.generate_token
+"eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJ..."
+
+irb> user.generate_token(purpose: :reset, expires_in: 1.hour)
+"eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJ..."
+```
+
+#### `#invalidate_tokens`
+
+Increments the `#token_version`, but does not apply the change to the database.
+
+#### `#invalidate_tokens!`
+
+Increments the `#token_version` and applies the change to the database.
+
 #### `.find_by_email(email)`
 
 Find a user by their email address. The query will disregard casing.
 
 ```ruby
 irb> User.find_by_email("user@example.com")
-
+#<User id: 1, email: "user@example.com">
 ```
 
 #### `.find_by_credentials(email, password)`
 
 Find a user by their email, then check that the password matches.
 
+If the email doesn't exist, `nil` will be returned. If the password doesn't match, `nil` will be returned.
+
 ```ruby
-# Find a user by their email address
-user = User.find_by_email("user@example.com")
+irb> User.find_by_credentials("user@example.com", "testing123")
+#<User id: 1, email: "user@example.com">
 
-# Find a user by their credentials
-user = User.find_by_credentials("user@example.com", "password")
+irb> User.find_by_credentials("user@example.com", "")
+nil
 
-# Generate an access token that will expire
-token = user.generate_token
-
-# Find a user by their token
-user = User.find_by_token(token)
-
-# Generate a reset token
-reset_token = user.generate_token(purpose: :reset, expires_in: 1.hour)
-
-# Find a user by their reset token
-user = User.find_by_reset_token(reset_token, purpose: :reset)
+irb> User.find_by_credentials("", "")
+nil
 ```
 
-Oh, and you can add authentication to your controllers:
+#### `.find_by_token(token, purpose: :access)`
+
+Find a user by their token. If the user can't be found, `nil` will be returned.
+
+```ruby
+irb> User.find_by_token(token)
+#<User id: 1, email: "user@example.com">
+
+irb> User.find_by_token(reset_token, purpose: :reset)
+#<User id: 1, email: "user@example.com">
+
+irb> User.find_by_token("")
+nil
+```
+
+### `TinyAuth::Controller`
 
 ```ruby
 class ApplicationController < ActionController::Base
   include TinyAuth::Controller.new(model: User)
-
-  before_action :authenticate_user
-
-  def index
-    if user_signed_in?
-      render json: {id: current_user.id}
-    else
-      head :unauthorized
-    end
-  end
 end
 ```
+
+The example above would generate the following methods based on the model's name:
+
+#### `#authenticate_user`
+
+This method should be called in a `before_action`. If an `Authorization` header is found, it will attempt to locate a user.
+
+#### `#current_user`
+
+An accessor that can be used to obtain access to the authenticated user after calling `authenticate_user`.
+
+#### `#user_signed_in?`
+
+A convenience method to determine if a user is signed in.
 
 ## Contributing
 
